@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BACHA SUSHI | The Collection</title>
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;800&family=Noto+Sans+JP:wght@100;500&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        /* --- 1. DESIGN TOKENS --- */
+        :root {
+            --bg-deep: #0a0a0a;
+            --bg-panel: #111111;
+            
+            --pink: #db2ea0;
+            --cyan: #17d3cd;
+            --blue: #253080;
+            --white: #ffffff;
+            --gray: #888888;
+            
+            --line: rgba(255, 255, 255, 0.1);
+            
+            --font-display: 'Syncopate', sans-serif;
+            --font-body: 'Manrope', sans-serif;
+            --font-jp: 'Noto Sans JP', sans-serif;
+            
+            --easing: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* --- 2. BASE & RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            background-color: var(--bg-deep);
+            color: var(--white);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Texture Overlay (Noise) */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9000;
+        }
+
+        /* --- 3. CUSTOM CURSOR --- */
+        .cursor-dot {
+            width: 8px; height: 8px; background: var(--cyan);
+            border-radius: 50%; position: fixed; top: 0; left: 0;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 9999;
+        }
+        .cursor-circle {
+            width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%; position: fixed; top: 0; left: 0;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 9998;
+            transition: width 0.3s var(--easing), height 0.3s var(--easing), background 0.3s;
+        }
+        body:hover .cursor-circle { width: 40px; height: 40px; }
+        a:hover ~ .cursor-circle, button:hover ~ .cursor-circle, .menu-item:hover ~ .cursor-circle {
+            width: 60px; height: 60px; background: rgba(219, 46, 160, 0.1); border-color: var(--pink);
+        }
+
+        /* --- 4. NAVIGATION --- */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            backdrop-filter: blur(5px);
+        }
+        
+        .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; letter-spacing: 2px; color: white; }
+        .brand span { color: var(--pink); }
+
+        .nav-actions a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 2rem;
+            font-weight: 600;
+            position: relative;
+            color: #ffffff; /* PURE WHITE */
+            opacity: 1;
+        }
+        .nav-actions a::after {
+            content:''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--cyan); transition: 0.3s;
+        }
+        .nav-actions a:hover::after { width: 100%; }
+
+        /* --- 5. HERO (Parallax & Visibility) --- */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: -10%; left: -10%; width: 120%; height: 120%;
+            background: url('https://framerusercontent.com/images/OxiiAF2AaVsv66Ic4mAWArXq4.jpg') center/cover;
+            filter: brightness(0.35) contrast(1.1); 
+            z-index: 0;
+            will-change: transform;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            color: var(--white);
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        
+        h1 span { display: block; }
+        .highlight { color: transparent; -webkit-text-stroke: 2px var(--white); transition: 0.5s; }
+        .highlight:hover { color: var(--pink); -webkit-text-stroke: 0; }
+
+        .hero-sub {
+            margin-top: 2rem;
+            font-size: 1rem;
+            letter-spacing: 4px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,1);
+        }
+
+        /* Reveal Animation */
+        .reveal-text { opacity: 0; transform: translateY(30px); transition: 1s var(--easing); }
+        .reveal-text.visible { opacity: 1; transform: translateY(0); }
+
+        /* --- 6. MARQUEE --- */
+        .marquee {
+            background: var(--blue);
+            padding: 1rem 0;
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            border-bottom: 1px solid var(--line);
+            border-top: 1px solid var(--line);
+        }
+        
+        .marquee-inner {
+            display: flex;
+            animation: scroll 30s linear infinite;
+        }
+        
+        .marquee span {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--white);
+            padding: 0 3rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* --- 7. STEPPER MENU (Sticky) --- */
+        .menu-section {
+            display: flex;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        /* Sticky Sidebar */
+        .menu-nav {
+            width: 280px;
+            border-right: 1px solid var(--line);
+            background: var(--bg-deep);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 4rem 2rem;
+            z-index: 10;
+        }
+
+        .menu-nav-header {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--gray);
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 1rem;
+        }
+
+        .menu-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .menu-links a {
+            display: block;
+            padding: 1rem 0;
+            color: var(--white);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: 0.3s;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-links a:hover { padding-left: 0.5rem; color: var(--pink); }
+        
+        .menu-links a.active {
+            padding-left: 1rem;
+            color: var(--cyan);
+            font-weight: 700;
+        }
+        .menu-links a.active::before {
+            content: '●'; position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 0.6rem; color: var(--pink);
+        }
+        
+        .reserve-btn {
+            margin-top: auto;
+            background: var(--pink);
+            color: white;
+            padding: 1.2rem;
+            text-align: center;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            border-radius: 0;
+            font-family: var(--font-display);
+            transition: 0.3s;
+        }
+        .reserve-btn:hover { background: var(--cyan); color: black; }
+
+        /* Right Content */
+        .menu-content {
+            flex: 1;
+            background: var(--bg-panel);
+            min-width: 0;
+        }
+
+        .category-block {
+            padding: 6rem 5%;
+            border-bottom: 1px solid var(--line);
+            /* Important for click scrolling precision: */
+            scroll-margin-top: 100px; 
+        }
+
+        .cat-header {
+            margin-bottom: 4rem;
+        }
+
+        .cat-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--white);
+            line-height: 1;
+        }
+        .cat-jp {
+            font-family: var(--font-jp);
+            font-size: 1.5rem;
+            color: var(--gray);
+            display: block;
+            margin-top: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        /* Item Grid */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 4rem 3rem;
+        }
+
+        .menu-item {
+            position: relative;
+            transition: 0.3s;
+        }
+        .menu-item:hover { transform: translateY(-5px); }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .item-name { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+        .item-price { font-family: var(--font-display); color: var(--cyan); font-weight: 700; font-size: 1.1rem; white-space: nowrap; margin-left: 1rem; }
+        .item-desc { font-size: 0.9rem; color: #a0a0a0; line-height: 1.6; }
+        
+        .tag { font-size: 0.6rem; text-transform: uppercase; padding: 2px 6px; border: 1px solid var(--pink); color: var(--pink); margin-left: 0.5rem; border-radius: 2px; vertical-align: middle; }
+        .tag.vegan { border-color: #5cdb5c; color: #5cdb5c; }
+        .tag.hot { border-color: #ff4d4d; color: #ff4d4d; }
+
+        /* --- 8. VISUAL BREAK --- */
+        .visual-break {
+            height: 50vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--line);
+        }
+        
+        .visual-bg {
+            position: absolute;
+            top: -20%; left: 0; width: 100%; height: 140%;
+            background: url('https://framerusercontent.com/images/OfSJr9jigS6zDzn7FeoH1bS7DM.jpg') center/cover;
+            filter: grayscale(100%) contrast(1.2) brightness(0.6);
+            will-change: transform;
+        }
+
+        .visual-text {
+            position: relative;
+            z-index: 2;
+            font-family: var(--font-display);
+            font-size: 3rem;
+            color: white;
+            text-align: center;
+            border: 1px solid white;
+            padding: 1.5rem 3rem;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- 9. FOOTER --- */
+        .footer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid var(--line);
+            background: var(--bg-deep);
+        }
+
+        .footer-cell {
+            padding: 4rem;
+            border-right: 1px solid var(--line);
+        }
+        .footer-cell:last-child { border-right: none; }
+
+        .f-label {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            color: var(--pink);
+            margin-bottom: 1.5rem;
+            display: block;
+            letter-spacing: 2px;
+        }
+
+        .f-content { font-size: 1.1rem; line-height: 1.8; color: #ddd; }
+        .f-content strong { color: var(--white); }
+
+        /* --- 10. MAP (Full Width) --- */
+        .map-section {
+            width: 100%;
+            height: 500px;
+            filter: grayscale(100%) invert(90%) contrast(1.2);
+            border-top: 1px solid var(--line);
+        }
+        iframe { width: 100%; height: 100%; border: 0; }
+        
+        .copyright {
+            text-align: center; padding: 2rem; color: #555; font-size: 0.8rem; border-top: 1px solid #222;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1024px) {
+            .navbar { padding: 1rem 1.5rem; }
+            .nav-actions { display: none; }
+            
+            .menu-section { flex-direction: column; }
+            .menu-nav { 
+                width: 100%; 
+                height: auto; 
+                position: sticky;
+                top: 0; 
+                flex-direction: row; 
+                overflow-x: auto; 
+                padding: 1rem;
+                background: var(--bg-deep); 
+                border-bottom: 1px solid var(--line);
+                white-space: nowrap;
+                z-index: 900;
+            }
+            .menu-nav-header, .reserve-btn { display: none; }
+            .menu-links { flex-direction: row; gap: 2rem; }
+            .menu-links a { border: none; padding: 0.5rem; }
+            .menu-links a.active { padding-left: 0.5rem; border-bottom: 2px solid var(--cyan); }
+            .menu-links a.active::before { display: none; }
+            
+            .category-block { padding: 4rem 1.5rem; }
+            .cat-title { font-size: 2.5rem; }
+            
+            .footer { grid-template-columns: 1fr; }
+            .footer-cell { border-right: none; border-bottom: 1px solid var(--line); padding: 3rem 1.5rem; }
+            
+            .visual-text { font-size: 1.5rem; width: 80%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- VISUAL FX -->
+    <div class="noise"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-circle"></div>
+
+    <!-- NAV -->
+    <nav class="navbar">
+        <div class="brand">BACHA<span>.</span></div>
+        <div class="nav-actions">
+            <a href="#menu">Étlap</a>
+            <a href="#footer">Kapcsolat</a>
+            <a href="https://www.restaurantlogin.com/ordering/restaurant/menu?company_uid=0be97133-ee5c-46bc-88d7-d46cfa838f42&restaurant_uid=d4dac3f6-e60b-4a43-bb67-a22451bedfde&facebook=true/">Asztalfoglalás</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-content">
+            <h1 class="reveal-text">
+                <span class="highlight">BACHASUSHI</span>
+                SOPRON
+            </h1>
+            <div class="hero-sub reveal-text" style="transition-delay: 0.2s;">Authentic Japanese Experience</div>
+        </div>
+    </header>
+
+    <!-- MARQUEE -->
+    <div class="marquee">
+        <div class="marquee-inner">
+            <span><i class="ri-star-fill"></i> Restaurant Guru 2025 Recommended</span>
+            <span><i class="ri-map-pin-fill"></i> Várkerület 90 Sopron</span>
+            <span><i class="ri-leaf-fill"></i> Friss Alapanyagok</span>
+            <span><i class="ri-fire-fill"></i> Autentikus Ízek</span>
+            <span><i class="ri-star-fill"></i> Restaurant Guru 2025 Recommended</span>
+            <span><i class="ri-map-pin-fill"></i> Várkerület 90 Sopron</span>
+        </div>
+    </div>
+
+    <!-- MENU SECTION -->
+    <section class="menu-section" id="menu">
+        
+        <!-- SIDEBAR INDEX -->
+        <aside class="menu-nav">
+            <div class="menu-nav-header">INDEX</div>
+            <div class="menu-links">
+                <a href="#combos" class="active">Combók & Boxok</a>
+                <a href="#rolls">Special Tekercsek</a>
+                <a href="#classic">Klasszikusok</a>
+                <a href="#wok">Wok & Tálak</a>
+                <a href="#soups">Levesek & Snack</a>
+                <a href="#dessert">Desszertek</a>
+            </div>
+            <a href="https://www.restaurantlogin.com/ordering/restaurant/menu?company_uid=0be97133-ee5c-46bc-88d7-d46cfa838f42&restaurant_uid=d4dac3f6-e60b-4a43-bb67-a22451bedfde&facebook=true/" class="reserve-btn">Rendelés Indítása</a>
+        </aside>
+
+        <!-- MENU CONTENT -->
+        <div class="menu-content">
+            
+            <!-- 1. COMBOS -->
+            <div id="combos" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">COMBÓK & BOXOK</h2>
+                    <span class="cat-jp reveal-text">コンボ</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Nakamoto Box (24db)</span> <span class="item-price">8 990 Ft</span></div>
+                        <div class="item-desc">3 lazac-avokádó, 3 crunchy tonhal-wakame, 3 spicy tonhal, 3 crunchy teriyaki salmon, 12 db vegyes hosomaki.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Classic 2.0 (16db)</span> <span class="item-price">6 990 Ft</span></div>
+                        <div class="item-desc">2 lazac nigiri, 2 tonhal nigiri, 4 lazac hosomaki, 4 tonhal hosomaki, 4 California Roll.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Lazac Lover (10db)</span> <span class="item-price">3 990 Ft</span></div>
+                        <div class="item-desc">4 lazac-avokádó special roll, 4 lazac hosomaki, 2 lazac nigiri és edamame.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">#PCKFUTIN (12db) <span class="tag vegan">VEGAN</span></span> <span class="item-price">3 990 Ft</span></div>
+                        <div class="item-desc">4 Sexy Barbie roll, 4 Daikon hosomaki, 4 marinált uborkás hosomaki, marinált tofu.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">I LOVE SOPRON (19db)</span> <span class="item-price">5 990 Ft</span></div>
+                        <div class="item-desc">4 marinált uborka, 4 spicy baby répa, 4 lazac hoso, 4 tonhal hoso, 2 lazac nigiri, 1 spicy ebi.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Tokyo Randi (2 fő)</span> <span class="item-price">11 990 Ft</span></div>
+                        <div class="item-desc">24 db-os sushi válogatás a chef aktuális kedvenceiből. Tökéletes randevúkhoz.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">BACHA Családi tál (48db)</span> <span class="item-price">16 990 Ft</span></div>
+                        <div class="item-desc">Prémium alapanyagokból készített összeválogatott sushik, nigirik, special rollok.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">BACHA Party tál (64db)</span> <span class="item-price">19 990 Ft</span></div>
+                        <div class="item-desc">A legnagyobb és legbőségesebb választásunk rendezvényekre.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SPECIAL ROLLS -->
+            <div id="rolls" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">SPECIAL TEKERCSEK</h2>
+                    <span class="cat-jp reveal-text">スペシャル</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Rich Boy (8db)</span> <span class="item-price">2 990 Ft</span></div>
+                        <div class="item-desc">Philadelphia krémsajttal töltve, flambírozott lazaccal borítva és szarvasgombás mayo.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Rainbow Roll (8db)</span> <span class="item-price">3 990 Ft</span></div>
+                        <div class="item-desc">Avokádó és krémsajt töltve, vöröstonhallal, lazaccal és avokádóval borítva.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Rich Girlz (8db)</span> <span class="item-price">4 990 Ft</span></div>
+                        <div class="item-desc">Vörös tonhallal töltve, pikáns lazactatárral borítva, szarvasgombás majonéz és tobiko.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Spicy Crunchy Salmon</span> <span class="item-price">2 290 Ft</span></div>
+                        <div class="item-desc">Lazac, avokádó és uborka fordítva tekerve spicy mayoval és ropogós hagymával.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Crunchy Tunacream</span> <span class="item-price">2 190 Ft</span></div>
+                        <div class="item-desc">Tonhalkrém, tengeri alga fordítva tekerve vegán mayoval és ropogós hagymával.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Sexy Barbie <span class="tag vegan">VEGAN</span></span> <span class="item-price">2 190 Ft</span></div>
+                        <div class="item-desc">Cékla, uborka, sriracha, fordítva tekerve pink rizsben, barbie mayo-val.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Hola Amigo <span class="tag vegan">VEGAN</span></span> <span class="item-price">2 290 Ft</span></div>
+                        <div class="item-desc">Kaliforniai paprika, avokádó fordítva tekerve sriracha és ropogós tortilla morzsában.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Crunchy Salmon Teriyaki</span> <span class="item-price">2 490 Ft</span></div>
+                        <div class="item-desc">Teriyaki lazac, uborka fordítva tekerve, unaghi szósz és ropogós hagyma.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. CLASSIC -->
+            <div id="classic" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">NIGIRI & MAKI</h2>
+                    <span class="cat-jp reveal-text">クラシック</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Nigiri (1db)</span> <span class="item-price">1 090 Ft-tól</span></div>
+                        <div class="item-desc">Lazac, Vörös Tonhal, Ebi (Garnéla), Angolna, Avokádó, Tofu, Surimi.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Veggie Maki (4db)</span> <span class="item-price">990 Ft</span></div>
+                        <div class="item-desc">Marinált uborka, Japán retek, Tofu, Édesburgonya, Spárga, Avokádó.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Halas Maki (4db)</span> <span class="item-price">1 290 Ft</span></div>
+                        <div class="item-desc">Lazac, Vörös Tonhal, Cooked Tuna, Surimi, Ebi.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Gunkan Selection</span> <span class="item-price">1 090 Ft</span></div>
+                        <div class="item-desc">Spicy Surimi, Edamame, Wakame. (Prémium: Lazac/Tuna 1290 Ft).</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. WOK & BOWLS -->
+            <div id="wok" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">WOK & TÁLAK</h2>
+                    <span class="cat-jp reveal-text">丼・中華鍋</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Poké Bowls</span> <span class="item-price">3 990 Ft-tól</span></div>
+                        <div class="item-desc">Veggie-Cékla, Csirke, Lazac, Tonhal. Sushi rizs, friss zöldségek.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">PadThai</span> <span class="item-price">2 990 Ft</span></div>
+                        <div class="item-desc">Thai pirított rizstészta. +Feltét: Csirke (990), Marha (1290), Garnéla (1490).</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Kao Pad (Thai sült rizs)</span> <span class="item-price">2 990 Ft</span></div>
+                        <div class="item-desc">Jázmin rizzsel. +Feltét: Csirke (990), Marha (1290), Garnéla (1490).</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Thai Curry</span> <span class="item-price">3 990 Ft</span></div>
+                        <div class="item-desc">Sárga thai curry csirkével és jázmin rizzsel.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Lazac Steak Teriyaki</span> <span class="item-price">4 490 Ft</span></div>
+                        <div class="item-desc">Grillezett lazac teriyaki szósszal és sushi rizzsel.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SOUPS -->
+            <div id="soups" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">LEVESEK & SNACK</h2>
+                    <span class="cat-jp reveal-text">スープ</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Bacha Pho</span> <span class="item-price">1 990 Ft</span></div>
+                        <div class="item-desc">Házi vietnámi pho leves, friss zöldségek, rizstészta.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Miso Leves</span> <span class="item-price">1 290 Ft</span></div>
+                        <div class="item-desc">Tradicionális miso, tofuval, wakaméval, újhagymával.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Tom Yum <span class="tag hot">HOT</span></span> <span class="item-price">1 990 Ft</span></div>
+                        <div class="item-desc">Nagy tál Thai csípős-citromos leves gombával, répával.</div>
+                    </div>
+                     <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Tom Kha</span> <span class="item-price">1 990 Ft</span></div>
+                        <div class="item-desc">Nagy tál Thai citromfüves kókusztej leves gombával.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Gyoza (3db)</span> <span class="item-price">1 490 Ft</span></div>
+                        <div class="item-desc">Csirke vagy Zöldséges japán töltött tészta. (5db: 1990 Ft).</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Tempura Koong</span> <span class="item-price">2 990 Ft</span></div>
+                        <div class="item-desc">Bundában sült rákok édes chili mártogatóssal.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. DESSERT -->
+            <div id="dessert" class="category-block">
+                <div class="cat-header">
+                    <h2 class="cat-title reveal-text">DESSZERTEK</h2>
+                    <span class="cat-jp reveal-text">お菓子</span>
+                </div>
+                <div class="item-grid">
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Mango Sticky Rice</span> <span class="item-price">1 790 Ft</span></div>
+                        <div class="item-desc">Ragacsos rizs kókusztejjel és mangóval.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Ice Mochi Mix</span> <span class="item-price">2 790 Ft</span></div>
+                        <div class="item-desc">Fagylalttal töltött rugalmas mochi tészta (matcha, mangó, kókusz, eper).</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Choco Lava Cake</span> <span class="item-price">1 790 Ft</span></div>
+                        <div class="item-desc">A csokirajongók álma! Kívül omlós, belül forró belga csokoládé.</div>
+                    </div>
+                    <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Tápióka Puding</span> <span class="item-price">1 490 Ft</span></div>
+                        <div class="item-desc">Könnyed krémes desszert apró tápiókagyöngyökkel és kókusztejjel.</div>
+                    </div>
+                     <div class="menu-item reveal-text">
+                        <div class="item-header"><span class="item-name">Bacha Mochi Magic</span> <span class="item-price">1 490 Ft</span></div>
+                        <div class="item-desc">Japán desszertválogatás, puha, rugalmas mochi tésztába rejtett töltelékek.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- VISUAL BREAK -->
+    <section class="visual-break">
+        <div class="visual-bg" id="visualBg"></div>
+        <div class="visual-text reveal-text">SOPRON ÍZEI</div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer" id="footer">
+        <div class="footer-cell reveal-text">
+            <span class="f-label">CÍMÜNK</span>
+            <div class="f-content">
+                <strong>9400 SOPRON</strong>
+                <br>Várkerület 90
+                <small>Magyarország</small>
+            </div>
+        </div>
+        <div class="footer-cell reveal-text" style="transition-delay: 0.1s;">
+            <span class="f-label">NYITVATARTÁS</span>
+            <div class="f-content" style="font-size: 1rem;">
+                <p>Hétfő-Csütörtök: 11:00 - 20:00</p>
+                <p style="color:var(--cyan)">Péntek: 11:00 - 21:00</p>
+                <p style="color:var(--cyan)">Szombat: 12:00 - 21:00</p>
+                <p>Vasárnap: 12:00 - 20:00</p>
+            </div>
+        </div>
+        <div class="footer-cell reveal-text" style="transition-delay: 0.2s;">
+            <span class="f-label">KAPCSOLAT</span>
+            <div class="f-content">
+                <strong>+36 30 087 2102</strong>
+                <small>bacha.sushishop@gmail.com</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MAP FULL WIDTH -->
+    <div class="map-section">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2716.4862423717585!2d16.5885068!3d47.6859336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476c24d1a3765181%3A0xc3f8e5812f2c8d88!2sSopron%2C%20V%C3%A1rker%C3%BClet%2090%2C%209400%20Hungary!5e0!3m2!1sen!2sus!4v1689234567890!5m2!1sen!2sus" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+    
+    <div class="copyright">
+        &copy; 2026 BACHA SUSHI SHOP. SOPRON.
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- 1. Custom Cursor ---
+        const dot = document.querySelector('.cursor-dot');
+        const circle = document.querySelector('.cursor-circle');
+
+        document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+            
+            setTimeout(() => {
+                circle.style.left = e.clientX + 'px';
+                circle.style.top = e.clientY + 'px';
+            }, 50);
+        });
+
+        // --- 2. Parallax & BG Visibility ---
+        const heroBg = document.getElementById('heroBg');
+        const visualBg = document.getElementById('visualBg');
+        
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            if (scrolled < window.innerHeight) {
+                heroBg.style.transform = `translateY(${scrolled * 0.4}px)`;
+            }
+            
+            const visualSection = document.querySelector('.visual-break');
+            const rect = visualSection.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                visualBg.style.transform = `translateY(${(rect.top) * 0.3}px)`;
+            }
+        });
+
+        // --- 3. Scroll Reveal ---
+        const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-text').forEach(el => observer.observe(el));
+
+        // --- 4. PRECISE MENU SPY (BoundingBox Method) ---
+        const menuLinks = document.querySelectorAll('.menu-links a');
+        const sections = document.querySelectorAll('.category-block');
+
+        // Logic: Highlight the section if its top edge is near the top of the viewing area
+        // or if we are deep inside it.
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            // "Hot Zone": 120px from top (roughly below navbar)
+            const offset = 120;
+
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                
+                // If section top is above the offset line...
+                // AND the section bottom is still below the offset line (meaning we are inside)
+                if (rect.top <= offset && rect.bottom > offset) {
+                    current = '#' + section.id;
+                }
+            });
+
+            // Apply active class
+            menuLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
